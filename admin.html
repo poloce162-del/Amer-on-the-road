@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
+
+<title>لوحة الإدارة</title>
+
+<!-- ===== Socket.IO ===== -->
+
+<script src="/socket.io/socket.io.js"></script>
+
+<!-- ===== Leaflet ===== -->
+
+<link rel="stylesheet"
+href="/leaflet/leaflet.css">
+
+<script src="/leaflet/leaflet.js"></script>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#0f172a;
+    font-family:tahoma;
+    height:100vh;
+    overflow:hidden;
+    display:flex;
+    color:#fff;
+}
+
+::-webkit-scrollbar{
+    width:8px;
+}
+
+::-webkit-scrollbar-thumb{
+    background:#d4af37;
+    border-radius:20px;
+}
+
+/* ===== Sidebar ===== */
+
+.sidebar{
+    width:320px;
+    background:#111827;
+    overflow:auto;
+    border-left:2px solid #d4af37;
+}
+
+.order{
+    padding:15px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+    cursor:pointer;
+    transition:.25s;
+    position:relative;
+}
+
+.order::before{
+    content:'';
+    position:absolute;
+    right:0;
+    top:0;
+    width:4px;
+    height:100%;
+    background:#d4af37;
+    opacity:0;
+    transition:.25s;
+}
+
+.order:hover::before,
+.order.active::before{
+    opacity:1;
+}
+
+.order:hover{
+    background:#1f2937;
+}
+
+.active{
+    background:#374151;
+}
+
+.unread{
+    background:red;
+    color:#fff;
+    padding:2px 8px;
+    border-radius:20px;
+    font-size:12px;
+}
+
+/* ===== Chat ===== */
+
+.chat-area{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+}
+
+/* ===== Header ===== */
+
+.header{
+    background:#111827;
+    border-bottom:2px solid #d4af37;
+    padding:15px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+}
+
+#clientLocation{
+    color:#facc15;
+}
+
+/* ===== Messages ===== */
+
+.messages{
+    flex:1;
+    overflow:auto;
+    padding:20px;
+    background:
+    linear-gradient(
+    rgba(255,255,255,.92),
+    rgba(255,255,255,.92)
+    ),
+    url('https://www.transparenttextures.com/patterns/cubes.png');
+    color:#000;
+}
+
+.msg{
+    max-width:75%;
+    padding:12px 14px;
+    border-radius:18px;
+    margin:10px 0;
+    line-height:1.7;
+    animation:fade .25s ease;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+    word-break:break-word;
+}
+
+.client{
+    background:#fff;
+    margin-right:auto;
+    border-bottom-right-radius:6px;
+}
+
+.admin{
+    background:#dcfce7;
+    margin-left:auto;
+    border-bottom-left-radius:6px;
+}
+
+.msg-time{
+    margin-top:6px;
+    font-size:11px;
+    opacity:.6;
+}
+
+@keyframes fade{
+
+from{
+opacity:0;
+transform:translateY(10px);
+}
+
+to{
+opacity:1;
+transform:translateY(0);
+}
+
+}
+
+img{
+    max-width:220px;
+    border-radius:12px;
+}
+
+audio{
+    width:220px;
+}
+
+iframe{
+    border:none;
+    border-radius:12px;
+}
+
+#typingBox{
+    background:#fff;
+    color:#555;
+    padding:8px 16px;
+    font-size:13px;
+}
+
+#emojiBox{
+    background:#fff;
+    border-top:1px solid #ddd;
+    padding:10px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+
+#emojiBox span{
+    font-size:24px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+#emojiBox span:hover{
+    transform:scale(1.2);
+}
+
+.controls{
+    background:#fff;
+    border-top:1px solid #ddd;
+    padding:12px;
+    display:flex;
+    gap:8px;
+}
+
+.controls input{
+    flex:1;
+    padding:12px;
+    border-radius:14px;
+    border:1px solid #ccc;
+    outline:none;
+}
+
+button{
+    background:
+    linear-gradient(
+    135deg,
+    #facc15,
+    #d4af37
+    );
+    border:none;
+    padding:10px 14px;
+    border-radius:14px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+button:hover{
+    transform:scale(1.04);
+}
+
+#recordBtn.recording{
+    background:#ef4444;
+    color:#fff;
+}
+
+#searchBox{
+    position:absolute;
+    top:10px;
+    left:10px;
+    display:flex;
+    gap:6px;
+    z-index:999;
+}
+
+#searchInput{
+    display:none;
+    width:180px;
+    padding:10px;
+    border:none;
+    border-radius:12px;
+}
+
+#topNotify{
+    position:fixed;
+    top:20px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#111827;
+    color:#fff;
+    padding:12px 18px;
+    border-radius:14px;
+    z-index:999999;
+    display:none;
+}
+
+#mapModal{
+    position:fixed;
+    inset:0;
+    background:#0f172a;
+    z-index:999999;
+    display:none;
+    flex-direction:column;
+}
+
+#mapHeader{
+    height:70px;
+    background:#111827;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 20px;
+    border-bottom:2px solid #d4af37;
+}
+
+#driversMap{
+    flex:1;
+}
+
+@media(max-width:768px){
+
+.sidebar{
+    width:110px;
+}
+
+.order{
+    font-size:12px;
+}
+
+.msg{
+    max-width:90%;
+}
+
+.controls{
+    flex-wrap:wrap;
+}
+
+.controls input{
+    width:100%;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="topNotify"></div>
+
+<div id="searchBox">
+
+<button onclick="toggleSearch()">
+🔍
+</button>
+
+<input id="searchInput"
+placeholder="بحث...">
+
+</div>
+
+<div class="sidebar"
+id="ordersList"></div>
+
+<div class="chat-area">
+
+<div class="header">
+
+<div id="orderTitle">
+اختر طلب
+</div>
+
+<div id="clientLocation">
+
+📍
+<span id="locationText">
+---
+</span>
+
+<button onclick="openClientMap()">
+🗺️
+</button>
+
+</div>
+
+<button onclick="openMap()">
+🚚 السائقين
+</button>
+
+<select id="statusSelect"
+onchange="changeStatus()">
+
+<option value="جديد">جديد</option>
+
+<option value="جاري التنفيذ">
+جاري التنفيذ
+</option>
+
+<option value="مكتمل">
+مكتمل
+</option>
+
+</select>
+
+</div>
+
+<div class="messages"
+id="messages"></div>
+
+<div id="typingBox"></div>
+
+<div id="emojiBox">
+
+<span onclick="insertEmoji('😀')">😀</span>
+<span onclick="insertEmoji('😁')">😁</span>
+<span onclick="insertEmoji('😂')">😂</span>
+<span onclick="insertEmoji('🤣')">🤣</span>
+<span onclick="insertEmoji('😊')">😊</span>
+<span onclick="insertEmoji('😍')">😍</span>
+<span onclick="insertEmoji('😘')">😘</span>
+<span onclick="insertEmoji('😎')">😎</span>
+<span onclick="insertEmoji('😭')">😭</span>
+<span onclick="insertEmoji('😡')">😡</span>
+<span onclick="insertEmoji('👍')">👍</span>
+<span onclick="insertEmoji('👎')">👎</span>
+<span onclick="insertEmoji('👏')">👏</span>
+<span onclick="insertEmoji('🙏')">🙏</span>
+<span onclick="insertEmoji('🔥')">🔥</span>
+<span onclick="insertEmoji('❤️')">❤️</span>
+<span onclick="insertEmoji('💔')">💔</span>
+<span onclick="insertEmoji('🎉')">🎉</span>
+<span onclick="insertEmoji('🚗')">🚗</span>
+<span onclick="insertEmoji('🛠️')">🛠️</span>
+<span onclick="insertEmoji('🛩️')">🛩️</span>
+<span onclick="insertEmoji('🐘')">🐘</span>
+<span onclick="insertEmoji('🐆')">🐆</span>
+<span onclick="insertEmoji('🐨')">🐨</span>
+<span onclick="insertEmoji('🦍')">🦍</span>
+<span onclick="insertEmoji('🐊')">🐊</span>
+<span onclick="insertEmoji('🦏')">🦏</span>
+<span onclick="insertEmoji('🦧')">🦧</span>
+<span onclick="insertEmoji('🐬')">🐬</span>
+<span onclick="insertEmoji('🪼')">🪼</span>
+<span onclick="insertEmoji('🐶')">🐶</span>
+<span onclick="insertEmoji('🪱')">🪱</span>
+<span onclick="insertEmoji('🍅')">🍅</span>
+<span onclick="insertEmoji('🍓')">🍓</span>
+<span onclick="insertEmoji('🚓')">🚓</span>
+<span onclick="insertEmoji('🚑')">🚑</span>
+<span onclick="insertEmoji('🚒')">🚒</span>
+<span onclick="insertEmoji('🛻')">🛻</span>
+<span onclick="insertEmoji('🚚')">🚚</span>
+<span onclick="insertEmoji('🛫')">🛫</span>
+<span onclick="insertEmoji('🛬')">🛬</span>
+<span onclick="insertEmoji('🛩️')">🛩️</span>
+<span onclick="insertEmoji('🚬')">🚬</span>
+<span onclick="insertEmoji('🎎')">🎎</span>
+<span onclick="insertEmoji('🪝')">🪝</span>
+<span onclick="insertEmoji('🏯')">🏯</span>
+<span onclick="insertEmoji('⏳')">⏳</span>
+<span onclick="insertEmoji('🖤')">🖤</span>
+<span onclick="insertEmoji('💓')">💓</span>
+
+
+</div>
+
+<div class="controls">
+
+<input id="msgInput"
+placeholder="اكتب رسالة">
+
+<button onclick="sendMsg()">
+➤
+</button>
+
+<input type="file"
+id="fileInput"
+hidden
+onchange="sendFile()">
+
+<button onclick="
+document.getElementById('fileInput').click()
+">
+📎
+</button>
+
+<button id="recordBtn"
+onclick="toggleRecord()">
+🎤
+</button>
+
+</div>
+
+</div>
+
+<div id="mapModal">
+
+<div id="mapHeader">
+
+<span>
+🗺️ تتبع السائقين
+</span>
+
+<button onclick="closeMap()">
+✖
+</button>
+
+</div>
+
+<div id="driversMap"></div>
+
+</div>
+
+<audio id="notifySound">
+<source src="/sounds/notify.mp3">
+</audio>
+
+<script>
+
+const socket = io();
+
+let orders = [];
+
+let currentOrderId = null;
+
+let map;
+
+let markers = {};
+
+let mediaRecorder;
+
+let recordedChunks = [];
+
+let isRecording = false;
+
+/* ===== Search ===== */
+
+function toggleSearch(){
+
+    const input =
+    document.getElementById(
+    'searchInput'
+    );
+
+    if(
+    input.style.display === 'none'
+    ||
+    !input.style.display
+    ){
+
+        input.style.display='block';
+
+        input.focus();
+
+    }else{
+
+        input.style.display='none';
+
+        input.value='';
+
+        renderOrders();
+    }
+}
+
+document
+.getElementById('searchInput')
+.addEventListener('input',e=>{
+
+    const value =
+    e.target.value.toLowerCase();
+
+    renderOrders(value);
+
+});
+
+/* ===== Notify ===== */
+
+function showTopNotify(text){
+
+    const notify =
+    document.getElementById(
+    'topNotify'
+    );
+
+    notify.innerText=text;
+
+    notify.style.display='block';
+
+    setTimeout(()=>{
+
+        notify.style.display='none';
+
+    },3000);
+}
+
+function playNotify(){
+
+    const sound =
+    document.getElementById(
+    'notifySound'
+    );
+
+    sound.currentTime=0;
+
+    sound.play().catch(()=>{});
+}
+
+/* ===== Render Orders ===== */
+
+function renderOrders(search=''){
+
+    const ordersList =
+    document.getElementById(
+    'ordersList'
+    );
+
+    ordersList.innerHTML='';
+
+const filteredOrders = orders.filter(order => {
+
+    return (
+        !search ||
+        (order.phone || '').includes(search) ||
+        (order.service || '')
+        .toLowerCase()
+        .includes(search)
+    );
+
+});
+
+filteredOrders.forEach(order => {
+
+    const div =
+    document.createElement('div');
+
+    div.className =
+    'order' +
+    (
+        order.id===currentOrderId
+        ? ' active'
+        : ''
+    );
+
+    div.innerHTML = `
+
+    <b>${order.service || 'طلب'}</b>
+
+    <br>
+
+    ${order.phone || ''}
+
+    <br>
+
+    ${new Date(
+    order.createdAt
+    ).toLocaleString()}
+
+    <br>
+
+    الحالة:
+    ${order.status || 'جديد'}
+
+    `;
+
+    div.onclick = ()=>{
+
+        openOrder(order.id);
+
+    };
+
+    ordersList.appendChild(div);
+
+    });
+
+    console.log(
+    'HTML =>',
+    ordersList.innerHTML
+    );
+
+}
+
+/* ===== Open Order ===== */
+
+function openOrder(id){
+
+    currentOrderId=id;
+
+    const order =
+    orders.find(o=>o.id===id);
+
+    if(!order) return;
+
+    document.getElementById(
+    'orderTitle'
+    ).innerText =
+    order.phone || ('طلب #' + id);
+
+    document.getElementById(
+    'locationText'
+    ).innerText =
+    order.location || '---';
+
+    document.getElementById(
+    'statusSelect'
+    ).value =
+    order.status || 'جديد';
+
+    renderOrders();
+
+    renderMessages(order);
+
+    socket.emit(
+    'joinOrderRoom',
+    {
+        orderId:id
+    });
+
+}
+
+/* ===== Render Messages ===== */
+
+function renderMessages(order){
+
+    const messages =
+    document.getElementById('messages');
+
+    messages.innerHTML='';
+
+    /* ===== ملفات الطلب ===== */
+
+    if(order.files){
+
+        const filesBox =
+        document.createElement('div');
+
+        filesBox.className='msg client';
+
+        filesBox.innerHTML = `
+
+        <h3>📂 ملفات الطلب</h3>
+
+        ${order.files.frontImg ? `
+        <div>
+            🚗 أمام<br>
+            <img src="/uploads/${order.files.frontImg}">
+        </div><br>
+        ` : ''}
+
+        ${order.files.backImg ? `
+        <div>
+            🚗 خلف<br>
+            <img src="/uploads/${order.files.backImg}">
+        </div><br>
+        ` : ''}
+
+        ${order.files.rightImg ? `
+        <div>
+            🚗 يمين<br>
+            <img src="/uploads/${order.files.rightImg}">
+        </div><br>
+        ` : ''}
+
+        ${order.files.leftImg ? `
+        <div>
+            🚗 يسار<br>
+            <img src="/uploads/${order.files.leftImg}">
+        </div><br>
+        ` : ''}
+
+        ${order.files.ownershipFrontImg ? `
+        <div>
+            🪪 الملكية أمام<br>
+            <img src="/uploads/${order.files.ownershipFrontImg}">
+        </div><br>
+        ` : ''}
+
+        ${order.files.ownershipBackImg ? `
+        <div>
+            🪪 الملكية خلف<br>
+            <img src="/uploads/${order.files.ownershipBackImg}">
+        </div><br>
+        ` : ''}
+
+        ${order.files.insuranceImg ? `
+        <div>
+            📄 وثيقة التأمين<br>
+            <a href="/uploads/${order.files.insuranceImg}"
+               target="_blank">
+               فتح الملف
+            </a>
+        </div>
+        ` : ''}
+
+        `;
+
+        messages.appendChild(filesBox);
+    }
+
+    /* ===== رسائل الشات ===== */
+
+    if(!order.messages) return;
+
+    order.messages.forEach(msg=>{
+
+        const div =
+        document.createElement('div');
+
+        div.className =
+        'msg ' + msg.sender;
+
+        let html='';
+
+        if(msg.type==='image'){
+
+            html =
+            `<img src="${msg.message}">`;
+
+        }else if(msg.type==='audio'){
+
+            html =
+            `<audio controls src="${msg.message}"></audio>`;
+
+        }else if(msg.type==='file'){
+
+            html =
+            `<a href="${msg.message}" target="_blank">
+            📎 تحميل ملف
+            </a>`;
+
+        }else{
+
+            html = msg.message;
+        }
+
+        div.innerHTML = `
+
+        ${html}
+
+        <div class="msg-time">
+        ${new Date(
+        msg.createdAt
+        ).toLocaleString()}
+        </div>
+
+        `;
+
+        messages.appendChild(div);
+
+    });
+
+    messages.scrollTop =
+    messages.scrollHeight;
+}
+
+/* ===== Send Message ===== */
+
+function sendMsg(){
+
+    const input =
+    document.getElementById(
+    'msgInput'
+    );
+
+    const text =
+    input.value.trim();
+
+    if(
+    !text
+    ||
+    !currentOrderId
+    ) return;
+
+    socket.emit(
+    'sendMessage',
+    {
+
+        orderId:currentOrderId,
+
+        sender:'admin',
+
+        message:text,
+
+        type:'text'
+
+    });
+
+    input.value='';
+
+}
+
+/* ===== Send File ===== */
+
+async function sendFile(){
+
+    const fileInput =
+    document.getElementById(
+    'fileInput'
+    );
+
+    const file =
+    fileInput.files[0];
+
+    if(!file || !currentOrderId)
+    return;
+
+    const fd =
+    new FormData();
+
+    fd.append('file',file);
+
+    const res =
+    await fetch(
+    '/api/chat-upload',
+    {
+        method:'POST',
+        body:fd
+    });
+
+    const data =
+    await res.json();
+
+    if(data.success){
+
+        socket.emit(
+        'sendMessage',
+        {
+
+            orderId:currentOrderId,
+
+            sender:'admin',
+
+            message:data.url,
+
+            type:data.type
+
+        });
+
+    }
+
+    fileInput.value='';
+}
+
+/* ===== Record ===== */
+
+async function toggleRecord(){
+
+    const btn =
+    document.getElementById(
+    'recordBtn'
+    );
+
+    if(!isRecording){
+
+        const stream =
+        await navigator
+        .mediaDevices
+        .getUserMedia({
+            audio:true
+        });
+
+        recordedChunks=[];
+
+        mediaRecorder =
+        new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable =
+        e=>recordedChunks.push(e.data);
+
+        mediaRecorder.onstop =
+        async()=>{
+
+            const blob =
+            new Blob(recordedChunks);
+
+            const fd =
+            new FormData();
+
+            fd.append(
+            'file',
+            blob,
+            'voice.webm'
+            );
+
+            const res =
+            await fetch(
+            '/api/chat-upload',
+            {
+                method:'POST',
+                body:fd
+            });
+
+            const data =
+            await res.json();
+
+            if(data.success){
+
+                socket.emit(
+                'sendMessage',
+                {
+
+                    orderId:currentOrderId,
+
+                    sender:'admin',
+
+                    message:data.url,
+
+                    type:'audio'
+
+                });
+
+            }
+
+        };
+
+        mediaRecorder.start();
+
+        isRecording=true;
+
+        btn.classList.add(
+        'recording'
+        );
+
+        btn.innerText='⏹';
+
+    }else{
+
+        mediaRecorder.stop();
+
+        isRecording=false;
+
+        btn.classList.remove(
+        'recording'
+        );
+
+        btn.innerText='🎤';
+    }
+}
+
+/* ===== Emoji ===== */
+
+function insertEmoji(emoji){
+
+    const input =
+    document.getElementById(
+    'msgInput'
+    );
+
+    input.value += emoji;
+
+    input.focus();
+}
+
+/* ===== Change Status ===== */
+
+function changeStatus(){
+
+    if(!currentOrderId)
+    return;
+
+    fetch(
+    '/api/update-status',
+    {
+
+        method:'POST',
+
+        headers:{
+            'Content-Type':
+            'application/json'
+        },
+
+        body:JSON.stringify({
+
+            orderId:currentOrderId,
+
+            status:
+            document.getElementById(
+            'statusSelect'
+            ).value
+
+        })
+
+    });
+}
+
+/* ===== Client Map ===== */
+
+function openClientMap(){
+
+    const order =
+    orders.find(
+    o=>o.id===currentOrderId
+    );
+
+    if(!order) return;
+
+    const lat =
+    order.latitude;
+
+    const lng =
+    order.longitude;
+
+    if(lat && lng){
+
+        window.open(
+        `https://maps.google.com/?q=${lat},${lng}`
+        );
+
+    }else{
+
+        window.open(
+        'https://maps.google.com?q=' +
+        encodeURIComponent(
+        order.location || ''
+        )
+        );
+
+    }
+}
+
+/* ===== Drivers Map ===== */
+
+function openMap(){
+
+    document.getElementById(
+    'mapModal'
+    ).style.display='flex';
+
+    setTimeout(()=>{
+
+        if(!map){
+
+            map =
+            L.map('driversMap')
+            .setView(
+            [30.0444,31.2357],
+            10
+            );
+
+            L.tileLayer(
+            'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            {
+                attribution:'OSM'
+            }
+            ).addTo(map);
+
+        }
+
+        map.invalidateSize();
+
+    },100);
+}
+
+function closeMap(){
+
+    document.getElementById(
+    'mapModal'
+    ).style.display='none';
+}
+
+/* ===== Socket ===== */
+
+socket.on(
+'newOrder',
+order=>{
+
+    console.log(
+        'NEW ORDER RECEIVED',
+        order
+    );
+
+    orders.unshift(order);
+
+    renderOrders();
+
+    playNotify();
+
+    showTopNotify(
+    '🚘 طلب جديد'
+    );
+
+});
+
+socket.on(
+'newMessage',
+data=>{
+
+    const order =
+    orders.find(
+    o=>o.id===data.orderId
+    );
+
+    if(order){
+
+        if(!order.messages){
+
+            order.messages=[];
+        }
+
+        order.messages.push(data);
+
+        if(
+        currentOrderId ===
+        data.orderId
+        ){
+
+            renderMessages(order);
+
+        }
+
+    }
+
+    if(data.sender==='client'){
+
+        playNotify();
+
+        showTopNotify(
+        '📩 رسالة جديدة'
+        );
+    }
+
+});
+
+socket.on(
+'typing',
+()=>{
+
+    const box =
+    document.getElementById(
+    'typingBox'
+    );
+
+    box.innerText =
+    '✍ العميل يكتب...';
+
+    clearTimeout(
+    window.typingTimer
+    );
+
+    window.typingTimer =
+    setTimeout(()=>{
+
+        box.innerText='';
+
+    },2000);
+
+});
+
+/* ===== Load Orders ===== */
+
+async function loadOrders(){
+
+    try{
+
+        const res = await fetch('/get-orders');
+
+        const data = await res.json();
+
+        console.log('ORDERS =>', data);
+
+        orders = data || [];
+
+        renderOrders();
+
+    }catch(err){
+
+        console.error(err);
+
+    }
+}
+/* ===== ENTER SEND ===== */
+
+document
+.getElementById('msgInput')
+.addEventListener('keydown',function(e){
+
+    if(e.key === 'Enter'){
+
+        e.preventDefault();
+
+        sendMsg();
+    }
+
+});
+
+
+loadOrders();
+
+</script>
+
+</body>
+</html>
