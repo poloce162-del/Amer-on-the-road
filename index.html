@@ -7,8 +7,6 @@
 
 <link rel="icon" href="/favicon.ico">
 
-<script src="/socket.io/socket.io.js"></script>
-
 <style>
 *{
     margin:0;
@@ -1883,7 +1881,7 @@ EN
 <div class="overlay">
 
 <h1 id="heroTitle">
-خدمات المساعدة على الطريق
+المنقذ للعناية بالسيارت
 </h1>
 
 <p id="heroSub">
@@ -1940,7 +1938,7 @@ onclick="toggleSection('assistSection')">
 </h3>
 
 <p id="subscriptionsDesc">
-خدمات المساعدة على الطريق
+المنقذ للعناية بالسيارت
 </p>
 
 </div>
@@ -2510,9 +2508,6 @@ const typingBox = document.getElementById('typingBox');
 
 const servicesBox = document.getElementById('servicesBox');
 const locationText = document.getElementById('locationText');
-const socket = io();
-
-socket.on('connect', () => {
 
     console.log('Socket Connected');
 
@@ -2632,12 +2627,12 @@ const translations = {
 
 ar:{
 
-heroTitle:'خدمات المساعدة على الطريق',
+heroTitle:'المنقذ للعناية بالسيارات',
 heroSub:'خدمة سريعة وآمنة على مدار الساعة',
 orderNow:'اطلب الآن',
 
 assistTitle:'الاشتراكات والتأمينات',
-assistSub:'خدمات المساعدة على الطريق',
+assistSub:'  المنقذ للعناية بالسيارات ',
 
 cashSub:'خدمات فورية ودفع مباشر',
 
