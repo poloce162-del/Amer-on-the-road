@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>✈️ AMER 🚘ON🛩️THE🚘ROAD🛫</title>
+<title>🚘الـمـنقذ لعناية السيارات🚘AL MUNQID CAR CARE🚘</title>
 
 <link rel="icon" href="/favicon.ico">
 
@@ -1842,10 +1842,10 @@ transform:translateX(100%);
 <div class="title-wrapper">
     <div class="scroll-track">
         <span class="lux-title">
-            ✈️ AMER 🚘ON🛩️THE🚘ROAD🛫
+            🚘الـمـنقذ لعناية السيارات🚘AL MUNQID CAR CARE🚘
         </span>
         <span class="lux-title">
-            ✈️ AMER 🚘ON🛩️THE🚘ROAD🛫
+            🚘الـمـنقذ لعناية السيارات🚘AL MUNQID CAR CARE🚘
         </span>
     </div>
 </div>
@@ -1867,7 +1867,7 @@ EN
 </button>
 
 <h2>
-✈️ AMER 🚘ON🛩️THE🚘ROAD🛫
+🚘الـمـنقذ لعناية السيارات🚘AL MUNQID CAR CARE🚘
 </h2>
 
 </header>
@@ -2508,57 +2508,6 @@ const typingBox = document.getElementById('typingBox');
 
 const servicesBox = document.getElementById('servicesBox');
 const locationText = document.getElementById('locationText');
-
-    console.log('Socket Connected');
-
-    if(orderId){
-
-        socket.emit('joinOrderRoom', {
-            orderId
-        });
-    }
-
-});
-
-socket.on('disconnect', () => {
-
-    console.log('Socket Disconnected');
-
-});
-
-/* ===== الطلب السريع ===== */
-
-socket.on('quickOrderCreated', data => {
-
-    if(!data.success) return;
-
-    orderId = data.order.id;
-
-    localStorage.setItem(
-        'savedOrderId',
-        orderId
-    );
-
-    socket.emit('joinOrderRoom', {
-        orderId
-    });
-
-    appendMessage(
-        'admin',
-        `✅ تم إرسال طلب خدمة:
-${data.order.service}`
-    );
-
-    playSound('orderSound');
-
-    chatBox.style.display = 'flex';
-
-    document.getElementById(
-        'quickOrderStatus'
-    ).innerText =
-    '✅ تم إرسال الطلب بنجاح';
-
-});
 
 
 function playSound(id){
@@ -3325,10 +3274,6 @@ if(saved){
 
         orderId = savedOrder;
 
-        socket.emit('joinOrderRoom',{
-            orderId
-        });
-
         orderStatusBox.style.display =
         'block';
     }
@@ -3481,7 +3426,6 @@ function sendMsg(){
 
 if(window.sendingMsg) return;
 
-if(!socket.connected){
 alert('الاتصال بالخادم غير متوفر');
 return;
 }
@@ -3496,7 +3440,6 @@ window.sendingMsg = false;
     if(!chatInput.value.trim() || !orderId)
     return;
 
-    socket.emit('sendMessage',{
 
         orderId,
 
@@ -3517,7 +3460,6 @@ function sendTyping(){
 
     if(orderId){
 
-        socket.emit('typing',{
 
             orderId,
 
@@ -3552,7 +3494,6 @@ if(file.size > 20 * 1024 * 1024){
 
 if(data.success){
 
-    socket.emit('sendMessage',{
 
         orderId,
 
@@ -3765,8 +3706,6 @@ const res = await fetch('/api/order',{        method:'POST',
         orderId = data.orderId;
         localStorage.setItem('savedOrderId', orderId);
 
-        socket.emit('joinOrderRoom',{ orderId });
-
         
         chatBox.style.display = 'flex';
 
@@ -3913,7 +3852,6 @@ console.log(data);
 
 if(data.success){
 
-socket.emit('sendMessage',{
 
 orderId,
 
@@ -3944,7 +3882,6 @@ alert('خطأ أثناء إرسال الصوت');
 }
 }
 
-socket.on('newMessage', d => {
 
 if(d.orderId != orderId) return;
 
@@ -3993,7 +3930,6 @@ d.id
 
 });
 
-socket.on('orderStatusUpdate', data => {
 
     if(data.orderId !== orderId)
     return;
@@ -4027,7 +3963,6 @@ socket.on('orderStatusUpdate', data => {
 
 });
 
-socket.on('typing', d => {
 
     if(d.orderId !== orderId)
     return;
@@ -4166,7 +4101,6 @@ async function quickServiceOrder(serviceName){
 
         };
 
-        socket.emit(
             'createQuickOrder',
             payload
         );
