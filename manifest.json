@@ -1,0 +1,8 @@
+{
+  "name": "Amer On The Road",
+  "short_name": "Amer",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#ff0000"
+}

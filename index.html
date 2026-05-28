@@ -3,9 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>✈️ AMER 🚘ON🛩️THE🚘ROAD🛫</title>
+<title>🚘الـمـنقذ لعناية السيارات🚘AL MUNQID CAR CARE🚘</title>
 
 <link rel="icon" href="/favicon.ico">
+
+<script src="/socket.io/socket.io.js"></script>
 
 <style>
 *{
@@ -116,41 +118,15 @@ header{
     align-items:center;
 
     overflow:hidden;
-}
-
-.hero-bg{
-
-    position:absolute;
-    inset:0;
-
-    width:100%;
-    height:100%;
-
-    object-fit:cover;
-
-    z-index:0;
-}
-
-.hero::before{
-
-    content:'';
-
-    position:absolute;
-    inset:0;
 
     background:
     linear-gradient(
     rgba(0,0,0,.65),
     rgba(0,0,0,.75)
-    );
+    ),
 
-    z-index:1;
-}
-
-.overlay{
-
-    position:relative;
-    z-index:2;
+    url('https://images.unsplash.com/photo-1503376780353-7e6692767b70')
+    center/cover no-repeat;
 }
 
 .overlay{
@@ -1842,10 +1818,10 @@ transform:translateX(100%);
 <div class="title-wrapper">
     <div class="scroll-track">
         <span class="lux-title">
-            ✈️ AMER 🚘ON🛩️THE🚘ROAD🛫
+            🚘الـمـنقذ لعناية السيارات🚘
         </span>
         <span class="lux-title">
-            ✈️ AMER 🚘ON🛩️THE🚘ROAD🛫
+            🚘AL MUNQID CAR CARE🚘
         </span>
     </div>
 </div>
@@ -1867,22 +1843,16 @@ EN
 </button>
 
 <h2>
-✈️ AMER 🚘ON🛩️THE🚘ROAD🛫
+🚘الـمـنقذ لعناية السيارات🚘AL MUNQID CAR CARE🚘
 </h2>
 
 </header>
 
 <section class="hero">
 
-<img src="/hero.jpg" class="hero-bg" alt="Hero">
-
-<img src="/hero.jpg" class="hero-bg" alt="Hero">
-
 <div class="overlay">
 
-<h1 id="heroTitle">
-المنقذ للعناية بالسيارت
-</h1>
+<h1 id="heroTitle">خدمات المساعدة على الطريق</h1>
 
 <p id="heroSub">
 خدمة سريعة وآمنة على مدار الساعة
@@ -1938,7 +1908,7 @@ onclick="toggleSection('assistSection')">
 </h3>
 
 <p id="subscriptionsDesc">
-المنقذ للعناية بالسيارت
+خدمات المساعدة على الطريق
 </p>
 
 </div>
@@ -2162,73 +2132,69 @@ class="submit-order-btn">
 <div id="cashSection"
 class="section-content">
 
+    <!-- خدمات الصيانة -->
 
-<!-- خدمات الصيانة -->
+    <div class="gold-box">
 
-<div class="gold-box">
+        <h3 id="maintenanceServices">
+            🔧 خدمات الصيانة والكاش
+        </h3>
 
-<h3 id="maintenanceServices">
-🔧 خدمات الصيانة والكاش
-</h3>
+        <select id="cashServiceSelect">
 
-<select id="cashServiceSelect">
+            <option>🛢️ تغيير زيت</option>
 
-<option>🛢️ تغيير زيت</option>
+            <option>🔋 تبديل بطارية</option>
 
-<option>🔋 تبديل بطارية</option>
+            <option>🛞 تبديل إطارات</option>
 
-<option>🛞 تبديل إطارات</option>
+            <option>⚙️ فحص كمبيوتر</option>
 
-<option>⚙️ فحص كمبيوتر</option>
+            <option>🚘 صيانة متنقلة</option>
 
-<option>🚘 صيانة متنقلة</option>
+            <option>🧰 إصلاح أعطال</option>
 
-<option>🧰 إصلاح أعطال</option>
+            <option>❄️ تعبئة مكيف</option>
 
-<option>❄️ تعبئة مكيف</option>
+            <option>🧼 غسيل وتلميع</option>
 
-<option>🧼 غسيل وتلميع</option>
+        </select>
 
-</select>
+        <button
+        style="
+        width:100%;
+        margin-top:12px;
+        "
+        onclick="
+        quickServiceOrder(
+        document.getElementById('cashServiceSelect').value
+        )
+        ">
+            📤 طلب الخدمة
+        </button>
 
-<button
-style="
-width:100%;
-margin-top:12px;
-"
-onclick="
-quickServiceOrder(
-document.getElementById('cashServiceSelect').value
-)
-">
-📤 طلب الخدمة
-</button>
+    </div>
 
-</div>
+    <!-- الدفع -->
 
-<!-- الدفع -->
+    <div class="gold-box">
 
-<div class="gold-box">
+        <h3 id="cashPayment">
+            💵 الدفع الكاش
+        </h3>
 
-<h3 id="cashPayment">
-💵 الدفع الكاش
-</h3>
+        <p id="cashText"
+        style="
+        text-align:center;
+        line-height:2;
+        color:#ddd;
+        ">
+            يمكنك طلب خدمات الصيانة
+            والدفع مباشرة بعد تنفيذ الخدمة.
+        </p>
 
-<p id="cashText"
-style="
-text-align:center;
-line-height:2;
-color:#ddd;
-">
+    </div>
 
-يمكنك طلب خدمات الصيانة والدفع مباشرة
-بعد تنفيذ الخدمة.
-
-</p>
-
-</div>
-
-</div>
 </div>
 
 <div class="chat-box" id="chatBox">
@@ -2508,6 +2474,9 @@ const typingBox = document.getElementById('typingBox');
 
 const servicesBox = document.getElementById('servicesBox');
 const locationText = document.getElementById('locationText');
+const socket = io();
+
+socket.on('connect', () => {
 
     console.log('Socket Connected');
 
@@ -2627,12 +2596,12 @@ const translations = {
 
 ar:{
 
-heroTitle:'المنقذ للعناية بالسيارات',
+heroTitle:'خدمات المساعدة على الطريق',
 heroSub:'خدمة سريعة وآمنة على مدار الساعة',
 orderNow:'اطلب الآن',
 
 assistTitle:'الاشتراكات والتأمينات',
-assistSub:'  المنقذ للعناية بالسيارات ',
+assistSub:'خدمات المساعدة على الطريق',
 
 cashSub:'خدمات فورية ودفع مباشر',
 
@@ -2641,9 +2610,9 @@ roadServices:'🛠️ خدمات المساعدة على الطريق',
 subsTitle:'🛡️ التأمينات والاشتراكات',
 cashTitle:'الصيانة والخدمات الكاش',
 cashPayment:'💵 الدفع الكاش',
-cashText:'يمكنك طلب خدمات الصيانة والدفع مباشرة بعد تنفيذ الخدمة.',
 cashServices:'🔧 خدمات الصيانة والكاش',
-requiredData:'📋 البيانات المطلوبة',
+cashText:'يمكنك طلب خدمات الصيانة والدفع مباشرة بعد تنفيذ الخدمة.',requiredData:'📋 البيانات المطلوبة',
+carImages:'🚗 أختار الخدمة  ',
 ownershipTitle:'🪪 ملكية السيارة',
 insuranceTitle:'📄 وثيقة التأمين',
 locationTitle:'📍 الموقع',
@@ -2654,6 +2623,8 @@ yearlySubscription:'🪪 اشتراك سنوي',
 vipSubscription:'⚡ اشتراك VIP',
 vehicleTransport:'🚚 اشتراك نقل مركبات',
 emergencyHelp:'🆘 مساعدة طوارئ 24/7',
+
+/* ===== الخدمات ===== */
 
 oilChange:'🛢️ تغيير زيت',
 batteryReplace:'🔋 تبديل بطارية',
@@ -2726,6 +2697,7 @@ cashServices:'🔧 Maintenance & Cash Services',
 cashText:'You can request maintenance services and pay directly after completion.',
 
 requiredData:'📋 Required Information',
+carImages:'📸 Choose The Service',
 ownershipTitle:'🪪 Vehicle Ownership',
 insuranceTitle:'📄 Insurance Document',
 locationTitle:'📍 Location',
@@ -2808,6 +2780,7 @@ cashServices:'🔧 Údržba a placené služby',
 cashText:'Můžete si objednat servis a zaplatit po dokončení služby.',
 
 requiredData:'📋 Požadované údaje',
+carImages:'📸 Vyberte si službu',
 ownershipTitle:'🪪 Vlastnictví vozidla',
 insuranceTitle:'📄 Pojistný dokument',
 locationTitle:'📍 Poloha',
