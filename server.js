@@ -82,12 +82,21 @@ function saveOrders(data) {
 ========================================= */
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+
+    res.sendFile(
+        path.join(__dirname, 'index.html')
+    );
+
 });
 
 app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin.html'));
+
+    res.sendFile(
+        path.join(__dirname, 'admin.html')
+    );
+
 });
+
 /* =========================================
    GET ORDERS
 ========================================= */
